@@ -14,7 +14,10 @@ namespace Demo
 	{
 		static void Main ()
 		{
-			Console.WriteLine ("Customers who have made purchases over $1000");
+            Console.WriteLine();
+            TestExpressionCombiner();
+
+            Console.WriteLine ("Customers who have made purchases over $1000");
 			QueryCustomers (p => p.Price > 1000);
 
 			Console.WriteLine ();
@@ -24,9 +27,6 @@ namespace Demo
 			Console.WriteLine ();
 			Console.WriteLine ("Customers who have made purchases over $1000 (manual join 2)");
 			QueryCustomersManualJoin2 (p => p.Price > 1000);
-
-			Console.WriteLine ();
-			TestExpressionCombiner ();
 
 			Console.WriteLine ();
 			Console.WriteLine ("Done");
@@ -136,20 +136,23 @@ namespace Demo
 		/// </summary>
 		static void TestExpressionCombiner ()
 		{
-			var data = new DemoData ();
+			var criteria1 = Linq.Predicate<Purchase>(p => p.Price > 1000);
+            var criteria2 = Linq.Predicate<Purchase>(p => criteria1.Invoke (p) || p.Description.Contains ("a"));
 
-			Expression<Func<Purchase, bool>> criteria1 = p => p.Price > 1000;
-			Expression<Func<Purchase, bool>> criteria2 = p => criteria1.Invoke (p) || p.Description.Contains ("a");
-
-			Console.WriteLine ("Here's what criteria2 looks like, before calling Expand");
+            //Expression<Func<Purchase, bool>> criteria1 = p => p.Price > 1000;
+            //Expression<Func<Purchase, bool>> criteria2 = p => criteria1.Invoke(p) || p.Description.Contains("a");
+            
+            Console.WriteLine ("Here's what criteria2 looks like, before calling Expand");
 			Console.WriteLine (criteria2.ToString ());
 
 			Console.WriteLine ();
 			Console.WriteLine ("Here's what criteria2 looks like, after calling Expand");
 			Console.WriteLine (criteria2.Expand ().ToString ());
 
-			// We can use criteria2 in either of two ways: either call Expand on the expression before using it:
-			var query = data.Purchases.Where (criteria2.Expand ());
+            var data = new DemoData();
+
+            // We can use criteria2 in either of two ways: either call Expand on the expression before using it:
+            var query = data.Purchases.Where (criteria2.Expand ());
 			Console.WriteLine ("Count: " + query.Count ());
 
 			// or call AsExpandable() on the Table:

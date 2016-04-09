@@ -23,6 +23,14 @@ namespace LinqKit
         /// <summary>
         /// Returns the given anonymous method as a lambda expression
         /// </summary>
+        public static Expression<Func<T, bool>> Predicate<T>(Expression<Func<T, bool>> expr)
+        {
+            return expr;
+        }
+
+        /// <summary>
+        /// Returns the given anonymous method as a lambda expression
+        /// </summary>
         public static Expression<Func<T, TResult>> Expr<T, TResult>(Expression<Func<T, TResult>> expr)
         {
             return expr;
