@@ -15,7 +15,9 @@ namespace LinqKit
 	/// </summary>
 	public abstract class ExpressionVisitor
 	{
-        /// <summary> Visit expression tree </summary>
+        /// <summary> 
+        /// Visit expression tree 
+        /// </summary>
 		public virtual Expression Visit (Expression exp)
 		{
 			if (exp == null)
@@ -82,11 +84,13 @@ namespace LinqKit
 				case ExpressionType.ListInit:
 					return this.VisitListInit ((ListInitExpression)exp);
 				default:
-					throw new Exception (string.Format ("Unhandled expression type: '{0}'", exp.NodeType));
+					throw new Exception ($"Unhandled expression type: '{exp.NodeType}'");
 			}
 		}
 
-        /// <summary> Visit member binding </summary>
+        /// <summary> 
+        /// Visit member binding 
+        /// </summary>
 		protected virtual MemberBinding VisitBinding (MemberBinding binding)
 		{
 			switch (binding.BindingType)
@@ -98,66 +102,62 @@ namespace LinqKit
 				case MemberBindingType.ListBinding:
 					return this.VisitMemberListBinding ((MemberListBinding)binding);
 				default:
-					throw new Exception (string.Format ("Unhandled binding type '{0}'", binding.BindingType));
+					throw new Exception ($"Unhandled binding type '{binding.BindingType}'");
 			}
 		}
 
-        /// <summary> Visit element initializer </summary>
+        /// <summary> 
+        /// Visit element initializer 
+        /// </summary>
 		protected virtual ElementInit VisitElementInitializer (ElementInit initializer)
 		{
 			ReadOnlyCollection<Expression> arguments = this.VisitExpressionList (initializer.Arguments);
-			if (arguments != initializer.Arguments)
-			{
-				return Expression.ElementInit (initializer.AddMethod, arguments);
-			}
-			return initializer;
+			return arguments != initializer.Arguments ? Expression.ElementInit (initializer.AddMethod, arguments) : initializer;
 		}
 
-        /// <summary> Visit one-parameter expression </summary>
+        /// <summary> 
+        /// Visit one-parameter expression 
+        /// </summary>
         protected virtual Expression VisitUnary (UnaryExpression u)
 		{
 			Expression operand = this.Visit (u.Operand);
-			if (operand != u.Operand)
-			{
-				return Expression.MakeUnary (u.NodeType, operand, u.Type, u.Method);
-			}
-			return u;
+			return operand != u.Operand ? Expression.MakeUnary (u.NodeType, operand, u.Type, u.Method) : u;
 		}
 
-        /// <summary> Visit two-parameter expression </summary>
+        /// <summary> 
+        /// Visit two-parameter expression 
+        /// </summary>
 		protected virtual Expression VisitBinary (BinaryExpression b)
 		{
 			Expression left = this.Visit (b.Left);
 			Expression right = this.Visit (b.Right);
 			Expression conversion = this.Visit (b.Conversion);
-			if (left != b.Left || right != b.Right || conversion != b.Conversion)
-			{
-				if (b.NodeType == ExpressionType.Coalesce && b.Conversion != null)
-					return Expression.Coalesce (left, right, conversion as LambdaExpression);
-				else
-					return Expression.MakeBinary (b.NodeType, left, right, b.IsLiftedToNull, b.Method);
-			}
-			return b;
+            if (left == b.Left && right == b.Right && conversion == b.Conversion) return b;
+            if (b.NodeType == ExpressionType.Coalesce && b.Conversion != null)
+                return Expression.Coalesce (left, right, conversion as LambdaExpression);
+            return Expression.MakeBinary (b.NodeType, left, right, b.IsLiftedToNull, b.Method);
 		}
 
-        /// <summary> Visit type-is expression </summary>
+        /// <summary> 
+        /// Visit type-is expression 
+        /// </summary>
         protected virtual Expression VisitTypeIs (TypeBinaryExpression b)
 		{
 			Expression expr = this.Visit (b.Expression);
-			if (expr != b.Expression)
-			{
-				return Expression.TypeIs (expr, b.TypeOperand);
-			}
-			return b;
+			return expr != b.Expression ? Expression.TypeIs (expr, b.TypeOperand) : b;
 		}
 
-        /// <summary> Return constant expression </summary>
+        /// <summary> 
+        /// Return constant expression 
+        /// </summary>
 		protected virtual Expression VisitConstant (ConstantExpression c)
 		{
 			return c;
 		}
 
-        /// <summary> Simplify conditional expression </summary>
+        /// <summary> 
+        /// Simplify conditional expression 
+        /// </summary>
 		protected virtual Expression VisitConditional (ConditionalExpression c)
 		{
 			Expression test = this.Visit (c.Test);
@@ -170,13 +170,17 @@ namespace LinqKit
 			return c;
 		}
 
-        /// <summary> Return parameter expression </summary>
+        /// <summary> 
+        /// Return parameter expression 
+        /// </summary>
         protected virtual Expression VisitParameter (ParameterExpression p)
 		{
 			return p;
 		}
 
-        /// <summary> Visit member access </summary>
+        /// <summary> 
+        /// Visit member access 
+        /// </summary>
         protected virtual Expression VisitMemberAccess (MemberExpression m)
 		{
 			Expression exp = this.Visit (m.Expression);
@@ -187,7 +191,9 @@ namespace LinqKit
 			return m;
 		}
 
-        /// <summary> Visit method call </summary>
+        /// <summary> 
+        /// Visit method call 
+        /// </summary>
 		protected virtual Expression VisitMethodCall (MethodCallExpression m)
 		{
 			Expression obj = this.Visit (m.Object);
@@ -199,7 +205,9 @@ namespace LinqKit
 			return m;
 		}
 
-        /// <summary> Visit list of expressions </summary>
+        /// <summary> 
+        /// Visit list of expressions
+        /// </summary>
 		protected virtual ReadOnlyCollection<Expression> VisitExpressionList (ReadOnlyCollection<Expression> original)
 		{
 			List<Expression> list = null;
@@ -227,40 +235,36 @@ namespace LinqKit
 			return original;
 		}
 
-        /// <summary> Visit member assignment </summary>
+        /// <summary> 
+        /// Visit member assignment 
+        /// </summary>
         protected virtual MemberAssignment VisitMemberAssignment (MemberAssignment assignment)
 		{
 			Expression e = this.Visit (assignment.Expression);
-			if (e != assignment.Expression)
-			{
-				return Expression.Bind (assignment.Member, e);
-			}
-			return assignment;
+			return e != assignment.Expression ? Expression.Bind (assignment.Member, e) : assignment;
 		}
 
-        /// <summary> Visit member binding </summary>
+        /// <summary> 
+        /// Visit member binding 
+        /// </summary>
 		protected virtual MemberMemberBinding VisitMemberMemberBinding (MemberMemberBinding binding)
 		{
 			IEnumerable<MemberBinding> bindings = this.VisitBindingList (binding.Bindings);
-			if (bindings != binding.Bindings)
-			{
-				return Expression.MemberBind (binding.Member, bindings);
-			}
-			return binding;
+			return bindings != binding.Bindings ? Expression.MemberBind (binding.Member, bindings) : binding;
 		}
 
-        /// <summary> Visit member list binding </summary>
+        /// <summary> 
+        /// Visit member list binding 
+        /// </summary>
         protected virtual MemberListBinding VisitMemberListBinding (MemberListBinding binding)
 		{
 			IEnumerable<ElementInit> initializers = this.VisitElementInitializerList (binding.Initializers);
-			if (initializers != binding.Initializers)
-			{
-				return Expression.ListBind (binding.Member, initializers);
-			}
-			return binding;
+			return initializers != binding.Initializers ? Expression.ListBind (binding.Member, initializers) : binding;
 		}
 
-        /// <summary> Visit list of bindings </summary>
+        /// <summary> 
+        /// Visit list of bindings 
+        /// </summary>
 		protected virtual IEnumerable<MemberBinding> VisitBindingList (ReadOnlyCollection<MemberBinding> original)
 		{
 			List<MemberBinding> list = null;
@@ -286,7 +290,9 @@ namespace LinqKit
 			return original;
 		}
 
-        /// <summary> Visit list of element-initializers </summary>
+        /// <summary> 
+        /// Visit list of element-initializers 
+        /// </summary>
         protected virtual IEnumerable<ElementInit> VisitElementInitializerList (ReadOnlyCollection<ElementInit> original)
 		{
 			List<ElementInit> list = null;
@@ -310,14 +316,18 @@ namespace LinqKit
 		    return list != null ? (IEnumerable<ElementInit>) list : original;
 		}
 
-        /// <summary> Visit lambda expression </summary>
+        /// <summary> 
+        /// Visit lambda expression 
+        /// </summary>
         protected virtual Expression VisitLambda (LambdaExpression lambda)
 		{
 			Expression body = this.Visit (lambda.Body);
 			return body != lambda.Body ? Expression.Lambda (lambda.Type, body, lambda.Parameters) : lambda;
 		}
 
-        /// <summary> Visit new-expression </summary>
+        /// <summary> 
+        /// Visit new-expression 
+        /// </summary>
 		protected virtual NewExpression VisitNew (NewExpression nex)
 		{
 		    IEnumerable<Expression> args = this.VisitExpressionList (nex.Arguments);
@@ -328,7 +338,9 @@ namespace LinqKit
 		               : nex;
 		}
 
-        /// <summary> Visit member init expression </summary>
+        /// <summary> 
+        /// Visit member init expression 
+        /// </summary>
 	    protected virtual Expression VisitMemberInit (MemberInitExpression init)
 		{
 			NewExpression n = this.VisitNew (init.NewExpression);
@@ -336,7 +348,9 @@ namespace LinqKit
 	        return n != init.NewExpression || bindings != init.Bindings ? Expression.MemberInit(n, bindings) : init;
 		}
 
-        /// <summary> Visit list init expression </summary>
+        /// <summary> 
+        /// Visit list init expression 
+        /// </summary>
 		protected virtual Expression VisitListInit (ListInitExpression init)
 		{
 			NewExpression n = this.VisitNew (init.NewExpression);
@@ -344,7 +358,9 @@ namespace LinqKit
 		    return n != init.NewExpression || initializers != init.Initializers ? Expression.ListInit(n, initializers) : init;
 		}
 
-        /// <summary> Visit array expression </summary>
+        /// <summary> 
+        /// Visit array expression 
+        /// </summary>
         protected virtual Expression VisitNewArray (NewArrayExpression na)
 		{
 		    IEnumerable<Expression> exprs = this.VisitExpressionList (na.Expressions);
@@ -355,7 +371,9 @@ namespace LinqKit
 		               : na;
 		}
 
-        /// <summary> Visit invocation expression </summary>
+        /// <summary> 
+        /// Visit invocation expression 
+        /// </summary>
 	    protected virtual Expression VisitInvocation (InvocationExpression iv)
 		{
 			IEnumerable<Expression> args = this.VisitExpressionList (iv.Arguments);
