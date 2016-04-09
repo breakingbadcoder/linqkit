@@ -1,5 +1,3 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/github/scottksmith95/LINQKit)](https://ci.appveyor.com/project/Thorium/linqkit)
-
 What is LINQKit?
 =======
 
